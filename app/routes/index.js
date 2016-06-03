@@ -1,7 +1,7 @@
 'use strict';
 
 var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var PollHandler = require(path + '/app/controllers/pollHandler.server.js');
 
 module.exports = function (app, passport) {
 
@@ -13,12 +13,7 @@ module.exports = function (app, passport) {
 		}
 	}
 
-	var clickHandler = new ClickHandler();
-
-	app.route('/')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/index.html');
-		});
+	var pollHandler = new PollHandler();
 
 	app.route('/login')
 		.get(function (req, res) {
@@ -36,10 +31,16 @@ module.exports = function (app, passport) {
 			res.sendFile(path + '/public/profile.html');
 		});
 
-	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {
-			res.json(req.user.github);
+	//---- unauthenticated pages ----
+	app.route('/')
+		.get(function (req, res) {
+			res.sendFile(path + '/public/index.html');
 		});
+
+	app.route('/poll/:pollId')
+		.get(function (req, res) {
+			res.sendFile(path + '/public/poll.html');
+	});
 
 	app.route('/auth/github')
 		.get(passport.authenticate('github'));
@@ -50,8 +51,8 @@ module.exports = function (app, passport) {
 			failureRedirect: '/login'
 		}));
 
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);
+	app.route('/api/polls/:id')
+		.get(isLoggedIn, pollHandler.getPoll);
+//		.post(isLoggedIn, clickHandler.addClick)
+//		.delete(isLoggedIn, clickHandler.resetClicks);
 };
